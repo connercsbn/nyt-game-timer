@@ -3,14 +3,15 @@ let game;
 let started = false;
 
 document.addEventListener('click', (e) => {
+  if (e.target.type === "submit") {
+    game.updateGameInfo();
+    return;
+  }
   if (started) return;
   if (e.target.innerText === "Play") {
     started = true;
     start()
     return;
-  }
-  if (e.target.type === "submit") {
-    game.updateGameInfo();
   }
 });
 
@@ -26,15 +27,16 @@ function getGame() {
 
 class Game {
   constructor() {
-    this.seconds = undefined;
+    this.centiseconds = undefined;
     this.gameInfo = undefined;
     this.timer = undefined;
     this.finished = undefined;
   }
   updateTimer() {
-    let hours = Math.floor(this.seconds / 3600); // 1 hour = 3600000 milliseconds
-    let minutes = Math.floor(this.seconds / 60); // 1 minute = 60000 milliseconds
-    let formattedTime = pad(hours) + ":" + pad(minutes) + ":" + pad(this.seconds % 60);
+    let seconds = Math.floor(this.centiseconds / 10);
+    let minutes = Math.floor(seconds / 60);
+    let hours = Math.floor(minutes / 60);
+    let formattedTime = pad(hours) + ":" + pad(minutes) + ":" + pad(seconds % 60) + "." + this.centiseconds % 10;
     timer.innerText = formattedTime;
   }
 }
@@ -53,20 +55,23 @@ class ConnectionsGame extends Game {
     this.updateGameInfo();
     this.timerInfo = JSON.parse(localStorage.getItem('connectionsTimer') || "{}");
     this.timerInfo[this.gameInfo.dayOfTest] ??= 0;
-    this.seconds = this.timerInfo[this.gameInfo.dayOfTest];
+    this.centiseconds = this.timerInfo[this.gameInfo.dayOfTest];
     this.intervalID = setInterval(() => {
       this.tick();
-    }, 1000)
+    }, 100)
   }
   updateGameInfo() {
     this.gameInfo = JSON.parse(localStorage.getItem('nyt-connections-beta'));
     this.finished = this.gameInfo.groupsFound.length === 4;
   }
   tick() {
-    this.timerInfo[this.gameInfo.dayOfTest] = this.seconds++;
-    localStorage.setItem('connectionsTimer', JSON.stringify(this.timerInfo))
+    this.timerInfo[this.gameInfo.dayOfTest] = this.centiseconds++;
+    if (this.timerInfo[this.gameInfo.dayOfTest] % 10 === 0) localStorage.setItem('connectionsTimer', JSON.stringify(this.timerInfo))
     this.updateTimer();
-    if (this.finished) clearInterval(this.intervalID);
+    if (this.finished) {
+      clearInterval(this.intervalID);
+      localStorage.setItem('connectionsTimer', JSON.stringify(this.timerInfo))
+    }
   }
 }
 
@@ -90,7 +95,6 @@ function pad(number) {
 }
 
 function start() {
-  console.log("clicked on the button. starting timer.")
   startDate = new Date();
   game = getGame();
   game.init();
