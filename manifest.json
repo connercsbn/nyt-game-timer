@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Game Timer",
-  "description": "Time NYT Games",
+  "description": "Time Your NYT Games",
   "version": "1.0",
   "action": {
     "default_popup": "hello.html"
