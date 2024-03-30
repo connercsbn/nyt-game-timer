@@ -34,7 +34,7 @@ class Game {
   updateTimer() {
     let hours = Math.floor(this.seconds / 3600); // 1 hour = 3600000 milliseconds
     let minutes = Math.floor(this.seconds / 60); // 1 minute = 60000 milliseconds
-    let formattedTime = pad(hours) + ":" + pad(minutes) + ":" + pad(this.seconds);
+    let formattedTime = pad(hours) + ":" + pad(minutes) + ":" + pad(this.seconds % 60);
     timer.innerText = formattedTime;
   }
 }
@@ -60,7 +60,7 @@ class ConnectionsGame extends Game {
   }
   updateGameInfo() {
     this.gameInfo = JSON.parse(localStorage.getItem('nyt-connections-beta'));
-    this.finished = gameInfo.groupsFound.length === 4;
+    this.finished = this.gameInfo.groupsFound.length === 4;
   }
   tick() {
     this.timerInfo[this.gameInfo.dayOfTest] = this.seconds++;
