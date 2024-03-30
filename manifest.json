@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Game Timer",
+  "description": "Time NYT Games",
+  "version": "1.0",
+  "action": {
+    "default_popup": "hello.html"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "js": [
+        "scripts/content.js"
+      ],
+      "matches": [
+        "https://*/games/strands*",
+        "https://*/games/connections*"
+      ]
+    }
+  ]
+}
