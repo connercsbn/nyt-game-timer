@@ -1,6 +1,12 @@
 let timer;
 let game;
 let started = false;
+startDate = new Date();
+
+
+chrome.runtime.sendMessage({ message: "getState" }, (res) => {
+  game.displaying = res;
+});
 
 document.addEventListener('click', (e) => {
   if (e.target.type === "submit") {
@@ -10,7 +16,7 @@ document.addEventListener('click', (e) => {
   if (started) return;
   if (e.target.innerText === "Play") {
     started = true;
-    start()
+    game.start()
     return;
   }
 });
@@ -22,6 +28,8 @@ function getGame() {
       return new ConnectionsGame();
     case "strands":
       return new StrandsGame();
+    default:
+      console.log(name)
   }
 }
 
@@ -29,8 +37,12 @@ class Game {
   constructor() {
     this.centiseconds = undefined;
     this.gameInfo = undefined;
-    this.timer = undefined;
     this.finished = undefined;
+    this._displaying = undefined;
+    chrome.runtime.onMessage.addListener(updateDisplaying);
+  }
+  toggle(state) {
+    console.log(state)
   }
   updateTimer() {
     let seconds = Math.floor(this.centiseconds / 10);
@@ -46,19 +58,41 @@ class ConnectionsGame extends Game {
     super();
     this.intervalID = undefined;
   }
+  set displaying(state) {
+    this._displaying = state;
+    if (!state) {
+      this.deinit();
+    }
+  }
   init() {
+    console.log('calling init')
     let header = document.querySelector('#portal-game-header').querySelector('h1');
     header.style.display = "flex"; header.style.columnGap = "16px"; header.style.alignItems = "center";
     timer = header.querySelector('#portal-game-date').cloneNode(true);
+    console.log(timer)
     header.appendChild(timer);
     timer.innerText = "";
     this.updateGameInfo();
-    this.timerInfo = JSON.parse(localStorage.getItem('connectionsTimer') || "{}");
+    let tempLocal = localStorage.getItem('connectionsTimer');
+    if (tempLocal == undefined || tempLocal == "undefined") tempLocal = "{}"
+    console.log(tempLocal)
+    this.timerInfo = JSON.parse(tempLocal);
     this.timerInfo[this.gameInfo.dayOfTest] ??= 0;
     this.centiseconds = this.timerInfo[this.gameInfo.dayOfTest];
+  }
+  start() {
+    if (!this._displaying) return
+    if (this.intervalID) console.error(this.intervalID + ": interval id already exists")
     this.intervalID = setInterval(() => {
       this.tick();
     }, 100)
+    timer.style.display = "block";
+  }
+  deinit() {
+    console.log(`calling deinit: clearing timer ${this.intervalID}`)
+    timer.style.display = "none";
+    clearInterval(this.intervalID);
+    localStorage.removeItem('connectionsTimer', JSON.stringify(this.timerInfo))
   }
   updateGameInfo() {
     this.gameInfo = JSON.parse(localStorage.getItem('nyt-connections-beta'));
@@ -94,10 +128,13 @@ function pad(number) {
   return number;
 }
 
-function start() {
-  startDate = new Date();
-  game = getGame();
-  game.init();
-};
+
+function updateDisplaying(state) {
+  console.log(`received state update ${state}`)
+  if (!game) return console.log("no game?")
+  game.displaying = state;
+}
 
 
+game = getGame();
+if (game) game.init();

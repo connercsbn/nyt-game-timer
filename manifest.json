@@ -1,6 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Game Timer",
+  "icon": "./nyt-timer-2.png",
   "description": "Time Your NYT Games",
   "version": "1.0",
   "action": {
@@ -16,6 +17,10 @@
         "https://*.nytimes.com/games/connections*"
       ]
     }
+  ],
+  "host_permissions": [
+    "https://*.nytimes.com/games/strands*",
+    "https://*.nytimes.com/games/connections*"
   ],
   "browser_specific_settings": {
     "gecko": {
