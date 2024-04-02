@@ -28,8 +28,6 @@ function getGame() {
       return new ConnectionsGame();
     case "strands":
       return new StrandsGame();
-    default:
-      console.log(name)
   }
 }
 
@@ -40,9 +38,6 @@ class Game {
     this.finished = undefined;
     this._displaying = undefined;
     chrome.runtime.onMessage.addListener(updateDisplaying);
-  }
-  toggle(state) {
-    console.log(state)
   }
   updateTimer() {
     let seconds = Math.floor(this.centiseconds / 10);
@@ -65,38 +60,33 @@ class ConnectionsGame extends Game {
     }
   }
   init() {
-    console.log('calling init')
     let header = document.querySelector('#portal-game-header').querySelector('h1');
     header.style.display = "flex"; header.style.columnGap = "16px"; header.style.alignItems = "center";
     timer = header.querySelector('#portal-game-date').cloneNode(true);
-    console.log(timer)
     header.appendChild(timer);
     timer.innerText = "";
     this.updateGameInfo();
     let tempLocal = localStorage.getItem('connectionsTimer');
     if (tempLocal == undefined || tempLocal == "undefined") tempLocal = "{}"
-    console.log(tempLocal)
     this.timerInfo = JSON.parse(tempLocal);
     this.timerInfo[this.gameInfo.dayOfTest] ??= 0;
     this.centiseconds = this.timerInfo[this.gameInfo.dayOfTest];
   }
   start() {
     if (!this._displaying) return
-    if (this.intervalID) console.error(this.intervalID + ": interval id already exists")
     this.intervalID = setInterval(() => {
       this.tick();
     }, 100)
     timer.style.display = "block";
   }
   deinit() {
-    console.log(`calling deinit: clearing timer ${this.intervalID}`)
     timer.style.display = "none";
     clearInterval(this.intervalID);
     localStorage.removeItem('connectionsTimer', JSON.stringify(this.timerInfo))
   }
   updateGameInfo() {
     this.gameInfo = JSON.parse(localStorage.getItem('nyt-connections-beta'));
-    this.finished = this.gameInfo.groupsFound.length === 4;
+    this.finished = this.gameInfo.groupsFound.length >= 3;
   }
   tick() {
     this.timerInfo[this.gameInfo.dayOfTest] = this.centiseconds++;
@@ -130,8 +120,7 @@ function pad(number) {
 
 
 function updateDisplaying(state) {
-  console.log(`received state update ${state}`)
-  if (!game) return console.log("no game?")
+  if (!game) return
   game.displaying = state;
 }
 
