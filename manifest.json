@@ -2,25 +2,18 @@
   "manifest_version": 3,
   "name": "Game Timer",
   "description": "Time Your NYT Games",
-  "version": "1.0",
+  "version": "1.3",
   "action": {
     "default_popup": "index.html"
   },
   "background": {
-    "scripts": [
-      "scripts/worker.js"
-    ],
+    "scripts": ["scripts/worker.js"],
     "type": "module"
   },
   "content_scripts": [
     {
-      "js": [
-        "scripts/content.js"
-      ],
-      "matches": [
-        "https://*.nytimes.com/games/strands*",
-        "https://*.nytimes.com/games/connections*"
-      ]
+      "js": ["scripts/content.js"],
+      "matches": ["https://*.nytimes.com/games/strands*", "https://*.nytimes.com/games/connections*"]
     }
   ],
   "icons": {
@@ -29,18 +22,11 @@
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "permissions": [
-    "storage",
-    "activeTab",
-    "tabs"
-  ],
-  "host_permissions": [
-    "https://*.nytimes.com/games/strands*",
-    "https://*.nytimes.com/games/connections*"
-  ],
+  "permissions": ["activeTab", "tabs", "storage"],
+  "host_permissions": ["https://*.nytimes.com/games/strands*", "https://*.nytimes.com/games/connections*"],
   "browser_specific_settings": {
     "gecko": {
-      "id": "gametimer@connersbrianwebsite.xyz"
+      "id": "addon@connersbrianwebsite.xyz"
     }
   }
 }

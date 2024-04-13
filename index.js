@@ -1,36 +1,38 @@
+let checkbox = document.querySelector("input");
+let checkState = false;
+let body = document.querySelector("body");
+
 async function hasPerms() {
-  return browser.permissions.contains(
-    {
-      origins: [
-        "https://*.nytimes.com/games/strands*",
-        "https://*.nytimes.com/games/connections*"
-      ]
-    }
-  )
+  return browser.permissions.contains({
+    origins: ["https://*.nytimes.com/games/strands*", "https://*.nytimes.com/games/connections*"],
+  });
 }
 
 async function toggle() {
   await browser.permissions.request({
-    origins: [
-      "https://*.nytimes.com/games/connections*"
-    ]
-  })
+    origins: ["https://*.nytimes.com/games/connections*", "https://*.nytimes.com/games/strands*"],
+  });
   if (await hasPerms()) {
-    browser.runtime.sendMessage({ state: !checkState }, (res) => {
-      console.log(res)
-      checkbox.checked = res;
-      checkState = res;
-    })
+    console.log(`attempted to toggle to state: ${!checkState}, ${!checkbox.checked}`);
+    let newState = await new Promise((resolve, reject) => {
+      browser.runtime.sendMessage({ postState: !checkState }, (response) => {
+        resolve(response.postState);
+      });
+    });
+    console.log(`state after attempted toggle: ${newState}`);
+    console.log(`attempting to update local state: BEFORE ${checkbox.checked}, ${checkState}`);
+    checkbox.checked = newState;
+    checkState = newState;
+    console.log(`attempting to update local state: AFTER ${checkbox.checked}, ${checkState}`);
+  } else {
+    console.log("either doesn't have perms or rejected perms?");
   }
+  return true;
 }
 
-let checkbox = document.querySelector('input');
-let checkState = false;
-let body = document.querySelector('body');
-
-document.addEventListener('DOMContentLoaded', async () => {
-  if (!await hasPerms()) {
-    browser.runtime.sendMessage({ state: false })
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!(await hasPerms())) {
+    browser.runtime.sendMessage({ postState: false });
     checkbox.checked = false;
     checkState = false;
   }
@@ -38,17 +40,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     checkbox.checked = res;
     checkState = res;
   });
-})
+});
 
-checkbox.addEventListener('click', toggle);
-
-
-
-
-
-
-
-
-
-
-
+checkbox.addEventListener("click", toggle);
